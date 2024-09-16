@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Melee Damage Calculator</title>
+    <!-- Tailwind CSS CDN for improved styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @media (max-width: 600px) {
+            .buttons {
+                flex-direction: column;
+            }
+
+            .buttons button {
+                width: 100%;
+                margin-top: 10px;
+            }
+
+            .container {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 text-gray-800">
+
+    <h2 class="text-center text-3xl font-bold my-5">Melee Damage Calculator</h2>
+
+    <div class="container mx-auto max-w-md p-6 bg-white rounded-lg shadow-md">
+
+        <!-- Dropdown to select saved creatures and autofill creature details -->
+        <label for="savedCreatureSelector" class="block text-sm font-medium text-gray-700">Select a saved creature:</label>
+        <select id="savedCreatureSelector" aria-label="Select a saved creature to autofill data" class="block w-full mt-1 mb-3 p-2 border border-gray-300 rounded">
+            <option value="">Select a creature to autofill</option>
+        </select>
+
+        <label for="creatureName" class="block text-sm font-medium text-gray-700">Creature Name:</label>
+        <input type="text" id="creatureName" class="block w-full mt-1 mb-3 p-2 border border-gray-300 rounded" placeholder="Enter creature's name" required>
+
+        <label for="yourDamage" class="block text-sm font-medium text-gray-700">Your Damage:</label>
+        <input type="number" id="yourDamage" min="1" class="block w-full mt-1 mb-3 p-2 border border-gray-300 rounded" placeholder="Enter your base damage" required oninput="calculateDamage()">
+
+        <label for="userWeight" class="block text-sm font-medium text-gray-700">Your Weight:</label>
+        <input type="number" id="userWeight" min="1" class="block w-full mt-1 mb-3 p-2 border border-gray-300 rounded" placeholder="Enter your weight" required oninput="calculateDamage()">
+
+        <div class="buttons flex justify-between mt-4">
+            <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded" onclick="calculateDamage()">Calculate</button>
+            <button class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded" onclick="saveCreature()">Save</button>
+            <button class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded" onclick="resetForm()">Reset</button>
+        </div>
+
+        <div class="result text-center mt-5 text-xl font-bold">
+            Final Damage: <span id="finalDamage">0</span>
+        </div>
+    </div>
+
+    <div class="container mx-auto max-w-md mt-5 p-6 bg-white rounded-lg shadow-md">
+        <!-- Dropdown to select saved creatures as target -->
+        <label for="targetCreature" class="block text-sm font-medium text-gray-700">Choose Target Creature:</label>
+        <select id="targetCreature" aria-label="Select a saved creature as target" class="block w-full mt-1 mb-3 p-2 border border-gray-300 rounded" onchange="loadTargetCreature()">
+            <option value="">Select a saved creature as target</option>
+        </select>
+
+        <label for="sitOrLayMultiplier" class="block text-sm font-medium text-gray-700">Target Sit or Lay Multiplier:</label>
+        <select id="sitOrLayMultiplier" aria-label="Select the target's stance multiplier" class="block w-full mt-1 mb-3 p-2 border border-gray-300 rounded" onchange="calculateDamage()">
+            <option value="1.25">Laying (1.25)</option>
+            <option value="1.12">Sitting (1.12)</option>
+            <option value="1.0">Standing (1.0)</option>
+        </select>
+
+        <label for="packMultiplier" class="block text-sm font-medium text-gray-700">Pack Multiplier:</label>
+        <input type="number" id="packMultiplier" step="0.01" min="1" value="1" class="block w-full mt-1 mb-3 p-2 border border-gray-300 rounded" placeholder="Enter pack multiplier" required oninput="calculateDamage()">
+
+        <label for="targetWeight" class="block text-sm font-medium text-gray-700">Target's Weight:</label>
+        <input type="number" id="targetWeight" min="1" class="block w-full mt-1 mb-3 p-2 border border-gray-300 rounded" placeholder="Enter target's weight" required oninput="calculateDamage()">
+    </div>
+
+    <div class="container mx-auto max-w-md mt-5 p-6 bg-white rounded-lg shadow-md">
+        <h3 class="text-center text-lg font-bold mb-3">Saved Creatures</h3>
+        <select id="creatureDropdown" class="block w-full mt-1 mb-3 p-2 border border-gray-300 rounded" onchange="loadCreature()">
+            <option value="">Select a creature</option>
+        </select>
+        <button class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded w-full" onclick="confirmDeletion()">Delete Selected Creature</button>
+    </div>
+
+    <script>
+        const initialCreatures = [{"name": "Adharcaiin", "yourDamage": 250, "userWeight": 1250}, /* Add more */ ];
+
+        window.onload = function() {
+            const savedDarkMode = localStorage.getItem('darkMode');
+            const savedCreatures = JSON.parse(localStorage.getItem('creatures')) || initialCreatures;
+
+            if (savedDarkMode === 'enabled') document.body.classList.add('dark-mode');
+            localStorage.setItem('creatures', JSON.stringify(savedCreatures));
+
+            document.getElementById('packMultiplier').value = 1;  // Default the pack multiplier to 1
+            updateCreatureDropdown();
+            updateTargetCreatureDropdown();
+            updateSavedCreatureSelector(); // Update saved creature selector on page load
+        };
+
+        function calculateDamage() {
+            const yourDamage = parseFloat(document.getElementById("yourDamage").value);
+            const sitOrLayMultiplier = parseFloat(document.getElementById("sitOrLayMultiplier").value);
+            const packMultiplier = parseFloat(document.getElementById("packMultiplier").value);
+            const userWeight = parseFloat(document.getElementById("userWeight").value);
+            const targetWeight = parseFloat(document.getElementById("targetWeight").value);
+
+            if (!yourDamage || !sitOrLayMultiplier || !packMultiplier || !userWeight || !targetWeight) return;
+            const finalDamage = (yourDamage * sitOrLayMultiplier * packMultiplier * (1 + (userWeight / targetWeight))) / 2;
+            document.getElementById("finalDamage").innerText = finalDamage.toFixed(2);
+        }
+
+        function resetForm() {
+            document.getElementById("creatureName").value = '';
+            document.getElementById("yourDamage").value = '';
+            document.getElementById("userWeight").value = '';
+            document.getElementById("finalDamage").innerText = '0';
+            document.getElementById("sitOrLayMultiplier").value = '1.0';
+            document.getElementById("packMultiplier").value = '1';
+            document.getElementById("targetWeight").value = '';
+        }
+
+        function saveCreature() {
+            const creatureName = document.getElementById("creatureName").value.trim();
+            const yourDamage = parseFloat(document.getElementById("yourDamage").value);
+            const userWeight = parseFloat(document.getElementById("userWeight").value);
+
+            if (!creatureName) return alert("Please enter a unique name.");
+
+            const savedCreatures = JSON.parse(localStorage.getItem('creatures')) || [];
+            savedCreatures.push({ name: creatureName, yourDamage, userWeight });
+            localStorage.setItem('creatures', JSON.stringify(savedCreatures));
+
+            updateCreatureDropdown();
+            updateTargetCreatureDropdown();
+            updateSavedCreatureSelector(); // Update the saved creature dropdown
+            alert("Creature saved!");
+        }
+
+        function updateCreatureDropdown() {
+            const creatureDropdown = document.getElementById("creatureDropdown");
+            const savedCreatures = JSON.parse(localStorage.getItem('creatures')) || [];
+            creatureDropdown.innerHTML = '<option value="">Select a creature</option>';
+            savedCreatures.forEach(creature => {
+                const option = document.createElement('option');
+                option.value = creature.name;
+                option.textContent = creature.name;
+                creatureDropdown.appendChild(option);
+            });
+        }
+
+        function updateTargetCreatureDropdown() {
+            const targetCreatureDropdown = document.getElementById("targetCreature");
+            const savedCreatures = JSON.parse(localStorage.getItem('creatures')) || [];
+            targetCreatureDropdown.innerHTML = '<option value="">Select a saved creature as target</option>';
+            savedCreatures.forEach(creature => {
+                const option = document.createElement('option');
+                option.value = creature.userWeight;
+                option.textContent = creature.name;
+                targetCreatureDropdown.appendChild(option);
+            });
+        }
+
+        function updateSavedCreatureSelector() {
+            const savedCreatureSelector = document.getElementById("savedCreatureSelector");
+            const savedCreatures = JSON.parse(localStorage.getItem('creatures')) || [];
+            savedCreatureSelector.innerHTML = '<option value="">Select a creature to autofill</option>';
+            savedCreatures.forEach(creature => {
+                const option = document.createElement('option');
+                option.value = JSON.stringify(creature); // Store the entire creature object as a string
+                option.textContent = creature.name;
+                savedCreatureSelector.appendChild(option);
+            });
+        }
+
+        function loadSavedCreature() {
+            const savedCreatureSelector = document.getElementById("savedCreatureSelector");
+            const selectedCreature = JSON.parse(savedCreatureSelector.value);
+            if (selectedCreature) {
+                document.getElementById("creatureName").value = selectedCreature.name;
+                document.getElementById("yourDamage").value = selectedCreature.yourDamage;
+                document.getElementById("userWeight").value = selectedCreature.userWeight;
+                calculateDamage(); // Recalculate damage based on selected creature
+            }
+        }
+
+        function loadTargetCreature() {
+            const targetCreatureDropdown = document.getElementById("targetCreature");
+            const selectedTargetWeight = targetCreatureDropdown.value;
+            document.getElementById("targetWeight").value = selectedTargetWeight;
+            calculateDamage();
+        }
+
+        function confirmDeletion() {
+            const selectedName = document.getElementById("creatureDropdown").value;
+            if (!selectedName) return alert("Please select a creature to delete.");
+            const confirmDelete = confirm("Are you sure you want to delete this creature?");
+            if (confirmDelete) deleteSelectedCreature();
+        }
+
+        function deleteSelectedCreature() {
+            const selectedName = document.getElementById("creatureDropdown").value;
+            let savedCreatures = JSON.parse(localStorage.getItem('creatures')) || [];
+            savedCreatures = savedCreatures.filter(creature => creature.name !== selectedName);
+            localStorage.setItem('creatures', JSON.stringify(savedCreatures));
+
+            updateCreatureDropdown();
+            updateTargetCreatureDropdown();
+            updateSavedCreatureSelector();
+            alert("Creature deleted!");
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode') ? 'enabled' : 'disabled');
+        }
+    </script>
+
+</body>
+
+</html>
