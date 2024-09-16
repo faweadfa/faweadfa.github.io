@@ -89,11 +89,8 @@
         const initialCreatures = [{"name": "Adharcaiin", "yourDamage": 250, "userWeight": 1250}, /* Add more */ ];
 
         window.onload = function() {
-            const savedDarkMode = localStorage.getItem('darkMode');
             const savedCreatures = JSON.parse(localStorage.getItem('creatures')) || initialCreatures;
-
-            if (savedDarkMode === 'enabled') document.body.classList.add('dark-mode');
-            localStorage.setItem('creatures', JSON.stringify(savedCreatures));
+            localStorage.setItem('creatures', JSON.stringify(savedCreatures));  // Store the creatures if none exist
 
             document.getElementById('packMultiplier').value = 1;  // Default the pack multiplier to 1
             updateCreatureDropdown();
@@ -101,6 +98,7 @@
             updateSavedCreatureSelector(); // Update saved creature selector on page load
         };
 
+        // Calculate final damage
         function calculateDamage() {
             const yourDamage = parseFloat(document.getElementById("yourDamage").value);
             const sitOrLayMultiplier = parseFloat(document.getElementById("sitOrLayMultiplier").value);
@@ -113,6 +111,7 @@
             document.getElementById("finalDamage").innerText = finalDamage.toFixed(2);
         }
 
+        // Reset the form
         function resetForm() {
             document.getElementById("creatureName").value = '';
             document.getElementById("yourDamage").value = '';
@@ -123,6 +122,7 @@
             document.getElementById("targetWeight").value = '';
         }
 
+        // Save the creature to localStorage
         function saveCreature() {
             const creatureName = document.getElementById("creatureName").value.trim();
             const yourDamage = parseFloat(document.getElementById("yourDamage").value);
@@ -149,42 +149,20 @@
             alert("Creature saved!");
         }
 
-        function updateCreatureDropdown() {
-            const creatureDropdown = document.getElementById("creatureDropdown");
-            const savedCreatures = JSON.parse(localStorage.getItem('creatures')) || [];
-            creatureDropdown.innerHTML = '<option value="">Select a creature</option>';
-            savedCreatures.forEach(creature => {
-                const option = document.createElement('option');
-                option.value = creature.name;
-                option.textContent = creature.name;
-                creatureDropdown.appendChild(option);
-            });
-        }
-
-        function updateTargetCreatureDropdown() {
-            const targetCreatureDropdown = document.getElementById("targetCreature");
-            const savedCreatures = JSON.parse(localStorage.getItem('creatures')) || [];
-            targetCreatureDropdown.innerHTML = '<option value="">Select a saved creature as target</option>';
-            savedCreatures.forEach(creature => {
-                const option = document.createElement('option');
-                option.value = creature.name;
-                option.textContent = creature.name;
-                targetCreatureDropdown.appendChild(option);
-            });
-        }
-
+        // Update the dropdown for selecting creatures to autofill the top form
         function updateSavedCreatureSelector() {
             const savedCreatureSelector = document.getElementById("savedCreatureSelector");
             const savedCreatures = JSON.parse(localStorage.getItem('creatures')) || [];
             savedCreatureSelector.innerHTML = '<option value="">Select a creature to autofill</option>';
             savedCreatures.forEach(creature => {
                 const option = document.createElement('option');
-                option.value = creature.name;
-                option.textContent = creature.name;
+                option.value = creature.name; // Value is the creature's name
+                option.textContent = creature.name; // Display the creature's name
                 savedCreatureSelector.appendChild(option);
             });
         }
 
+        // Load the selected creature's details into the top form
         function loadSavedCreature() {
             const savedCreatureSelector = document.getElementById("savedCreatureSelector");
             const creatureName = savedCreatureSelector.value;
@@ -199,6 +177,33 @@
             }
         }
 
+        // Update dropdown for creatures
+        function updateCreatureDropdown() {
+            const creatureDropdown = document.getElementById("creatureDropdown");
+            const savedCreatures = JSON.parse(localStorage.getItem('creatures')) || [];
+            creatureDropdown.innerHTML = '<option value="">Select a creature</option>';
+            savedCreatures.forEach(creature => {
+                const option = document.createElement('option');
+                option.value = creature.name;
+                option.textContent = creature.name;
+                creatureDropdown.appendChild(option);
+            });
+        }
+
+        // Update dropdown for selecting target creature
+        function updateTargetCreatureDropdown() {
+            const targetCreatureDropdown = document.getElementById("targetCreature");
+            const savedCreatures = JSON.parse(localStorage.getItem('creatures')) || [];
+            targetCreatureDropdown.innerHTML = '<option value="">Select a saved creature as target</option>';
+            savedCreatures.forEach(creature => {
+                const option = document.createElement('option');
+                option.value = creature.name; // Use name as value for selection
+                option.textContent = creature.name;
+                targetCreatureDropdown.appendChild(option);
+            });
+        }
+
+        // Load the target creature's weight into the target weight field
         function loadTargetCreature() {
             const targetCreatureDropdown = document.getElementById("targetCreature");
             const creatureName = targetCreatureDropdown.value;
@@ -211,6 +216,7 @@
             }
         }
 
+        // Confirm deletion of a creature
         function confirmDeletion() {
             const selectedName = document.getElementById("creatureDropdown").value;
             if (!selectedName) return alert("Please select a creature to delete.");
@@ -218,6 +224,7 @@
             if (confirmDelete) deleteSelectedCreature();
         }
 
+        // Delete the selected creature from localStorage
         function deleteSelectedCreature() {
             const selectedName = document.getElementById("creatureDropdown").value;
             let savedCreatures = JSON.parse(localStorage.getItem('creatures')) || [];
@@ -230,10 +237,6 @@
             alert("Creature deleted!");
         }
 
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark-mode');
-            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode') ? 'enabled' : 'disabled');
-        }
     </script>
 
 </body>
