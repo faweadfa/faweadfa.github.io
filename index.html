@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Melee Damage Calculator</title>
-    <!-- Tailwind CSS CDN for improved styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @media (max-width: 600px) {
@@ -33,7 +32,7 @@
 
         <!-- Dropdown to select saved creatures and autofill creature details -->
         <label for="savedCreatureSelector" class="block text-sm font-medium text-gray-700">Select a saved creature:</label>
-        <select id="savedCreatureSelector" aria-label="Select a saved creature to autofill data" class="block w-full mt-1 mb-3 p-2 border border-gray-300 rounded">
+        <select id="savedCreatureSelector" aria-label="Select a saved creature to autofill data" class="block w-full mt-1 mb-3 p-2 border border-gray-300 rounded" onchange="loadSavedCreature()">
             <option value="">Select a creature to autofill</option>
         </select>
 
@@ -132,12 +131,21 @@
             if (!creatureName) return alert("Please enter a unique name.");
 
             const savedCreatures = JSON.parse(localStorage.getItem('creatures')) || [];
-            savedCreatures.push({ name: creatureName, yourDamage, userWeight });
+            const newCreature = { name: creatureName, yourDamage, userWeight };
+
+            // Check for duplicates by name and overwrite
+            const existingIndex = savedCreatures.findIndex(creature => creature.name === creatureName);
+            if (existingIndex > -1) {
+                savedCreatures[existingIndex] = newCreature;
+            } else {
+                savedCreatures.push(newCreature);
+            }
+
             localStorage.setItem('creatures', JSON.stringify(savedCreatures));
 
             updateCreatureDropdown();
             updateTargetCreatureDropdown();
-            updateSavedCreatureSelector(); // Update the saved creature dropdown
+            updateSavedCreatureSelector();
             alert("Creature saved!");
         }
 
@@ -159,7 +167,7 @@
             targetCreatureDropdown.innerHTML = '<option value="">Select a saved creature as target</option>';
             savedCreatures.forEach(creature => {
                 const option = document.createElement('option');
-                option.value = creature.userWeight;
+                option.value = creature.name;
                 option.textContent = creature.name;
                 targetCreatureDropdown.appendChild(option);
             });
@@ -171,7 +179,7 @@
             savedCreatureSelector.innerHTML = '<option value="">Select a creature to autofill</option>';
             savedCreatures.forEach(creature => {
                 const option = document.createElement('option');
-                option.value = JSON.stringify(creature); // Store the entire creature object as a string
+                option.value = creature.name;
                 option.textContent = creature.name;
                 savedCreatureSelector.appendChild(option);
             });
@@ -179,7 +187,10 @@
 
         function loadSavedCreature() {
             const savedCreatureSelector = document.getElementById("savedCreatureSelector");
-            const selectedCreature = JSON.parse(savedCreatureSelector.value);
+            const creatureName = savedCreatureSelector.value;
+            const savedCreatures = JSON.parse(localStorage.getItem('creatures')) || [];
+            const selectedCreature = savedCreatures.find(creature => creature.name === creatureName);
+
             if (selectedCreature) {
                 document.getElementById("creatureName").value = selectedCreature.name;
                 document.getElementById("yourDamage").value = selectedCreature.yourDamage;
@@ -190,9 +201,14 @@
 
         function loadTargetCreature() {
             const targetCreatureDropdown = document.getElementById("targetCreature");
-            const selectedTargetWeight = targetCreatureDropdown.value;
-            document.getElementById("targetWeight").value = selectedTargetWeight;
-            calculateDamage();
+            const creatureName = targetCreatureDropdown.value;
+            const savedCreatures = JSON.parse(localStorage.getItem('creatures')) || [];
+            const selectedCreature = savedCreatures.find(creature => creature.name === creatureName);
+
+            if (selectedCreature) {
+                document.getElementById("targetWeight").value = selectedCreature.userWeight;
+                calculateDamage();
+            }
         }
 
         function confirmDeletion() {
