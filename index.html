@@ -82,7 +82,6 @@
             <input type="number" id="userWeight" min="1" class="block w-full mt-1 mb-3 p-2 border border-gray-300 rounded" placeholder="Enter your weight" required oninput="calculateDamage(); storeInitialValues()">
             <input type="number" id="weightPercentage" min="0" placeholder="%" class="inline-percentage" title="Enter percentage to increase weight" oninput="applyWeightPercentage()">
         </div>
-
         <div class="buttons flex justify-between mt-4">
             <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded" onclick="calculateDamage()">Calculate</button>
             <button class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded" onclick="saveCreature()">Save</button>
@@ -127,98 +126,103 @@
     </div>
 
     <script>
-        // Initial creatures to be added to the save list if no creatures exist
+        // Store the initial values
+        let initialDamage, initialWeight;
+
+        // Initial creatures array
         const initialCreatures = [
-            { name: "Adharcaiin", yourDamage: 250, userWeight: 1250 },
-            { name: "Aereis", yourDamage: 260, userWeight: 2300 },
-            { name: "Aesho", yourDamage: 180, userWeight: 2800 },
-            { name: "Aesmir", yourDamage: 215, userWeight: 6500 },
-            { name: "Aholai", yourDamage: 135, userWeight: 2300 },
-            { name: "Ahri'Tahmuk", yourDamage: 325, userWeight: 4350 },
-            { name: "Aidoneiscus", yourDamage: 400, userWeight: 3400 },
-            { name: "Aleicuda", yourDamage: 400, userWeight: 5000 },
-            { name: "Alkaksu", yourDamage: 65, userWeight: 800 },
-            { name: "Altulis", yourDamage: 155, userWeight: 5000 },
-            { name: "Amolis", yourDamage: 210, userWeight: 2700 },
-            { name: "Angelic Warden", yourDamage: 65, userWeight: 2250 },
-            { name: "Ani", yourDamage: 50, userWeight: 850 },
-            { name: "Anutill", yourDamage: 200, userWeight: 3000 },
-            { name: "Aolenus", yourDamage: 380, userWeight: 3350 },
-            { name: "Apofuex", yourDamage: 75, userWeight: 3000 },
-            { name: "Aqoxturumox", yourDamage: 150, userWeight: 22000 },
-            { name: "Arachyu", yourDamage: 650, userWeight: 11000 },
-            { name: "Archalium", yourDamage: 260, userWeight: 2500 },
-            { name: "Archinax", yourDamage: 500, userWeight: 2500 },
-            { name: "Ardor Warden", yourDamage: 95, userWeight: 7100 },
-            { name: "Arkmetta", yourDamage: 225, userWeight: 5250 },
-            { name: "Arrainoa", yourDamage: 400, userWeight: 2800 },
-            { name: "Arsonos", yourDamage: 400, userWeight: 5000 },
-            { name: "Artikauk", yourDamage: 180, userWeight: 2100 },
-            { name: "Asilvestrela", yourDamage: 230, userWeight: 4500 },
-            { name: "Astrothi", yourDamage: 85, userWeight: 800 },
-            { name: "Athulyth", yourDamage: 175, userWeight: 8500 },
-            { name: "Aueko", yourDamage: 100, userWeight: 2000 },
-            { name: "Auraron", yourDamage: 350, userWeight: 8000 },
-            { name: "Avothius", yourDamage: 320, userWeight: 7500 },
-            { name: "Axothan", yourDamage: 375, userWeight: 8750 },
-            { name: "Banishii", yourDamage: 200, userWeight: 3850 },
-            { name: "Bazelii", yourDamage: 275, userWeight: 3750 },
-            { name: "Beezu", yourDamage: 95, userWeight: 1100 },
-            { name: "Belluvaraptor", yourDamage: 110, userWeight: 800 },
-            { name: "Bengon", yourDamage: 225, userWeight: 3100 },
-            { name: "Bolatra", yourDamage: 185, userWeight: 3000 },
-            { name: "Boreal Warden", yourDamage: 65, userWeight: 50000 },
-            { name: "Borenhir", yourDamage: 220, userWeight: 3800 },
-            { name: "Boskurro", yourDamage: 365, userWeight: 5750 },
-            { name: "Brequewk", yourDamage: 65, userWeight: 850 },
-            { name: "Buff Eulopii", yourDamage: 525, userWeight: 5200 },
-            { name: "Buukon", yourDamage: 250, userWeight: 3400 },
-            { name: "Bäruw", yourDamage: 575, userWeight: 6000 },
-            { name: "Caldonterrus", yourDamage: 300, userWeight: 50000 },
-            { name: "Cantapodi", yourDamage: 120, userWeight: 999 },
-            { name: "Cavengauu", yourDamage: 275, userWeight: 5500 },
-            { name: "Celeritas", yourDamage: 220, userWeight: 7200 },
-            { name: "Cenicara", yourDamage: 200, userWeight: 2350 },
-            { name: "Chamei", yourDamage: 220, userWeight: 9000 },
-            { name: "Chisudo", yourDamage: 220, userWeight: 2050 },
-            { name: "Chrysos", yourDamage: 285, userWeight: 2600 },
-            { name: "Cimidstik", yourDamage: 120, userWeight: 1200 },
-            { name: "Cimmabu", yourDamage: 50, userWeight: 1650 },
-            { name: "Citrulantis", yourDamage: 100, userWeight: 3000 },
-            { name: "Clovilowper", yourDamage: 150, userWeight: 3500 },
-            { name: "Colval", yourDamage: 150, userWeight: 1150 },
-            { name: "Coniferon", yourDamage: 150, userWeight: 4250 },
-            { name: "Corsarlett", yourDamage: 230, userWeight: 1900 },
-            { name: "Corvurax", yourDamage: 150, userWeight: 3100 },
-            { name: "Cottol", yourDamage: 95, userWeight: 1350 },
-            { name: "Crata Peretina", yourDamage: 200, userWeight: 7250 },
-            { name: "Cryptoth", yourDamage: 300, userWeight: 5500 },
-            { name: "Cucuerpum", yourDamage: 225, userWeight: 6000 },
-            { name: "Cupuere", yourDamage: 50, userWeight: 3000 },
-            { name: "Cuxena", yourDamage: 150, userWeight: 3250 },
-            { name: "Dabaemura", yourDamage: 275, userWeight: 2200 },
-            { name: "Dalghara", yourDamage: 150, userWeight: 4000 },
-            { name: "Dantenos", yourDamage: 265, userWeight: 6000 },
-            { name: "Demetyra", yourDamage: 125, userWeight: 3200 },
-            { name: "Denjzi", yourDamage: 325, userWeight: 5000 },
-            { name: "Dieamarjla", yourDamage: 105, userWeight: 1600 },
-            { name: "Diesura", yourDamage: 110, userWeight: 1300 },
-            { name: "Diokrine", yourDamage: 145, userWeight: 1500 },
-            { name: "Doragonix", yourDamage: 125, userWeight: 1400 },
-            { name: "Dowatt", yourDamage: 120, userWeight: 1550 },
-            { name: "Dragonixsauria", yourDamage: 100, userWeight: 3500 },
-            { name: "Dunklaestus", yourDamage: 450, userWeight: 3500 },
-            { name: "Dyaelatura", yourDamage: 250, userWeight: 2200 },
-            { name: "Eigion Warden", yourDamage: 70, userWeight: 30000 },
-            { name: "Eiroca", yourDamage: 300, userWeight: 5000 },
-            { name: "Elarickkeir", yourDamage: 400, userWeight: 6500 },
-            { name: "Emphines", yourDamage: 125, userWeight: 1500 },
-            { name: "Empiterium", yourDamage: 450, userWeight: 15750 },
-            { name: "Equenix", yourDamage: 250, userWeight: 5350 },
-            { name: "Erridea", yourDamage: 520, userWeight: 3200 },
-            { name: "Eskarlor", yourDamage: 275, userWeight: 3000 }
+    {"Creature Name": "Adharcaiin", "Base Damage": 250, "Weight": 1250},
+    {"Creature Name": "Aereis", "Base Damage": 260, "Weight": 2300},
+    {"Creature Name": "Aesho", "Base Damage": 180, "Weight": 2800},
+    {"Creature Name": "Aesmir", "Base Damage": 215, "Weight": 6500},
+    {"Creature Name": "Aholai", "Base Damage": 135, "Weight": 2300},
+    {"Creature Name": "Ahri'Tahmuk", "Base Damage": 325, "Weight": 4350},
+    {"Creature Name": "Aidoneiscus", "Base Damage": 400, "Weight": 3400},
+    {"Creature Name": "Aleicuda", "Base Damage": 400, "Weight": 5000},
+    {"Creature Name": "Alkaksu", "Base Damage": 65, "Weight": 800},
+    {"Creature Name": "Altulis", "Base Damage": 155, "Weight": 5000},
+    {"Creature Name": "Amolis", "Base Damage": 210, "Weight": 2700},
+    {"Creature Name": "Angelic Warden", "Base Damage": 65, "Weight": 2250},
+    {"Creature Name": "Ani", "Base Damage": 50, "Weight": 850},
+    {"Creature Name": "Anutill", "Base Damage": 200, "Weight": 3000},
+    {"Creature Name": "Aolenus", "Base Damage": 380, "Weight": 3350},
+    {"Creature Name": "Apofuex", "Base Damage": 75, "Weight": 3000},
+    {"Creature Name": "Aqoxturumox", "Base Damage": 150, "Weight": 22000},
+    {"Creature Name": "Arachyu", "Base Damage": 650, "Weight": 11000},
+    {"Creature Name": "Archalium", "Base Damage": 260, "Weight": 2500},
+    {"Creature Name": "Archinax", "Base Damage": 500, "Weight": 2500},
+    {"Creature Name": "Ardor Warden", "Base Damage": 95, "Weight": 7100},
+    {"Creature Name": "Arkmetta", "Base Damage": 225, "Weight": 5250},
+    {"Creature Name": "Arrainoa", "Base Damage": 400, "Weight": 2800},
+    {"Creature Name": "Arsonos", "Base Damage": 400, "Weight": 5000},
+    {"Creature Name": "Artikauk", "Base Damage": 180, "Weight": 2100},
+    {"Creature Name": "Asilvestrela", "Base Damage": 230, "Weight": 4500},
+    {"Creature Name": "Astrothi", "Base Damage": 85, "Weight": 800},
+    {"Creature Name": "Athulyth", "Base Damage": 175, "Weight": 8500},
+    {"Creature Name": "Aueko", "Base Damage": 100, "Weight": 2000},
+    {"Creature Name": "Auraron", "Base Damage": 350, "Weight": 8000},
+    {"Creature Name": "Avothius", "Base Damage": 320, "Weight": 7500},
+    {"Creature Name": "Axothan", "Base Damage": 375, "Weight": 8750},
+    {"Creature Name": "Banishii", "Base Damage": 200, "Weight": 3850},
+    {"Creature Name": "Bazelii", "Base Damage": 275, "Weight": 3750},
+    {"Creature Name": "Beezu", "Base Damage": 95, "Weight": 1100},
+    {"Creature Name": "Belluvaraptor", "Base Damage": 110, "Weight": 800},
+    {"Creature Name": "Bengon", "Base Damage": 225, "Weight": 3100},
+    {"Creature Name": "Bolatra", "Base Damage": 185, "Weight": 3000},
+    {"Creature Name": "Boreal Warden", "Base Damage": 65, "Weight": 50000},
+    {"Creature Name": "Borenhir", "Base Damage": 220, "Weight": 3800},
+    {"Creature Name": "Boskurro", "Base Damage": 365, "Weight": 5750},
+    {"Creature Name": "Brequewk", "Base Damage": 65 , "Weight": 850},
+    {"Creature Name": "Buff Eulopii", "Base Damage": 525, "Weight": 5200},
+    {"Creature Name": "Buukon", "Base Damage": 250, "Weight": 3400},
+    {"Creature Name": "Bäruw", "Base Damage": 575, "Weight": 6000},
+    {"Creature Name": "Caldonterrus", "Base Damage": 300, "Weight": 50000},
+    {"Creature Name": "Cantapodi", "Base Damage": 120, "Weight": 999},
+    {"Creature Name": "Cavengauu", "Base Damage": 275, "Weight": 5500},
+    {"Creature Name": "Celeritas", "Base Damage": 220, "Weight": 7200},
+    {"Creature Name": "Cenicara", "Base Damage": 200, "Weight": 2350},
+    {"Creature Name": "Chamei", "Base Damage": 220, "Weight": 9000},
+    {"Creature Name": "Chisudo", "Base Damage": 220, "Weight": 2050},
+    {"Creature Name": "Chrysos", "Base Damage": 285, "Weight": 2600},
+    {"Creature Name": "Cimidstik", "Base Damage": 120, "Weight": 1200},
+    {"Creature Name": "Cimmabu", "Base Damage": 50, "Weight": 1650},
+    {"Creature Name": "Citrulantis", "Base Damage": 100, "Weight": 3000},
+    {"Creature Name": "Clovilowper", "Base Damage": 150, "Weight": 3500},
+    {"Creature Name": "Colval", "Base Damage": 150, "Weight": 1150},
+    {"Creature Name": "Coniferon", "Base Damage": 150, "Weight": 4250},
+    {"Creature Name": "Corsarlett", "Base Damage": 230, "Weight": 1900},
+    {"Creature Name": "Corvurax", "Base Damage": 150, "Weight": 3100},
+    {"Creature Name": "Cottol", "Base Damage": 95, "Weight": 1350},
+    {"Creature Name": "Crata Peretina", "Base Damage": 200, "Weight": 7250},
+    {"Creature Name": "Cryptoth", "Base Damage": 300, "Weight": 5500},
+    {"Creature Name": "Cucuerpum", "Base Damage": 225, "Weight": 6000},
+    {"Creature Name": "Cupuere", "Base Damage": 50, "Weight": 3000},
+    {"Creature Name": "Cuxena", "Base Damage": 150, "Weight": 3250},
+    {"Creature Name": "Dabaemura", "Base Damage": 275, "Weight": 2200},
+    {"Creature Name": "Dalghara", "Base Damage": 150, "Weight": 4000},
+    {"Creature Name": "Dantenos", "Base Damage": 265, "Weight": 6000},
+    {"Creature Name": "Demetyra", "Base Damage": 125, "Weight": 3200},
+    {"Creature Name": "Denjzi", "Base Damage": 325, "Weight": 5000},
+    {"Creature Name": "Dieamarjla", "Base Damage": 105, "Weight": 1600},
+    {"Creature Name": "Diesura", "Base Damage": 110, "Weight": 1300},
+    {"Creature Name": "Diokrine", "Base Damage": 145, "Weight": 1500},
+    {"Creature Name": "Doragonix", "Base Damage": 125, "Weight": 1400},
+    {"Creature Name": "Dowatt", "Base Damage": 120, "Weight": 1550},
+    {"Creature Name": "Dragonixsauria", "Base Damage": 100, "Weight": 3500},
+    {"Creature Name": "Dunklaestus", "Base Damage": 450, "Weight": 3500},
+    {"Creature Name": "Dyaelatura", "Base Damage": 250, "Weight": 2200},
+    {"Creature Name": "Eigion Warden", "Base Damage": 70, "Weight": 30000},
+    {"Creature Name": "Eiroca", "Base Damage": 300, "Weight": 5000},
+    {"Creature Name": "Elarickkeir", "Base Damage": 400, "Weight": 6500},
+    {"Creature Name": "Emphines", "Base Damage": 125, "Weight": 1500},
+    {"Creature Name": "Empiterium", "Base Damage": 450, "Weight": 15750},
+    {"Creature Name": "Equenix", "Base Damage": 250, "Weight": 5350},
+    {"Creature Name": "Erridea", "Base Damage": 520, "Weight": 3200},
+    {"Creature Name": "Eskarlor", "Base Damage": 275, "Weight": 3000},
+            // You can add as many creatures as you'd like here
         ];
 
+        // Onload function to auto-save initial creatures and update the UI
         window.onload = function() {
             let savedCreatures = JSON.parse(localStorage.getItem('creatures')) || [];
 
@@ -230,41 +234,42 @@
                 }
             });
 
-            // Update localStorage with the combined list
+            // Save the updated list to localStorage
             localStorage.setItem('creatures', JSON.stringify(savedCreatures));
 
+            // Update the dropdowns with the merged creatures
             updateCreatureDropdown();
             updateTargetCreatureDropdown();
             updateSavedCreatureSelector();
         };
 
-        // Update the dropdown for selecting creatures to autofill the top form
+        // Function to update dropdown for selecting creatures
         function updateSavedCreatureSelector() {
             const savedCreatureSelector = document.getElementById("savedCreatureSelector");
             const savedCreatures = JSON.parse(localStorage.getItem('creatures')) || [];
             savedCreatureSelector.innerHTML = '<option value="">Select a creature to autofill</option>';
             savedCreatures.forEach(creature => {
                 const option = document.createElement('option');
-                option.value = creature.name; // Use name as value for selection
-                option.textContent = creature.name; // Display the creature's name
+                option.value = creature.name;
+                option.textContent = creature.name;
                 savedCreatureSelector.appendChild(option);
             });
         }
 
-        // Update the creature dropdown for target selection
+        // Function to update target creature dropdown
         function updateTargetCreatureDropdown() {
             const targetCreatureDropdown = document.getElementById("targetCreature");
             const savedCreatures = JSON.parse(localStorage.getItem('creatures')) || [];
             targetCreatureDropdown.innerHTML = '<option value="">Select a saved creature as target</option>';
             savedCreatures.forEach(creature => {
                 const option = document.createElement('option');
-                option.value = creature.name; // Use name as value for selection
+                option.value = creature.name;
                 option.textContent = creature.name;
                 targetCreatureDropdown.appendChild(option);
             });
         }
 
-        // Update the dropdown for selecting creatures
+        // Function to update saved creatures dropdown for deletion
         function updateCreatureDropdown() {
             const creatureDropdown = document.getElementById("creatureDropdown");
             const savedCreatures = JSON.parse(localStorage.getItem('creatures')) || [];
@@ -277,7 +282,7 @@
             });
         }
 
-        // Load the selected creature's details into the top form
+        // Function to load saved creature details into top box
         function loadSavedCreature() {
             const savedCreatureSelector = document.getElementById("savedCreatureSelector");
             const creatureName = savedCreatureSelector.value;
@@ -288,6 +293,7 @@
                 document.getElementById("creatureName").value = selectedCreature.name;
                 document.getElementById("yourDamage").value = selectedCreature.yourDamage;
                 document.getElementById("userWeight").value = selectedCreature.userWeight;
+                storeInitialValues(); // Store initial values for percentage adjustment
                 calculateDamage();
             }
         }
