@@ -49,39 +49,41 @@
             font-size: 1.25rem;
             padding: 12px 16px;
         }
-
     </style>
 </head>
 
 <body class="bg-gray-100 text-gray-800">
-
     <h2 class="text-center text-3xl font-bold my-5">Melee Damage Calculator</h2>
 
-    <!-- Top Box (Creature details) -->
+    <!-- Melee Damage Calculator - single instance -->
+
     <div class="container mx-auto max-w-md p-6 bg-white rounded-lg shadow-md">
 
         <!-- Dropdown to select saved creatures and autofill creature details -->
         <label for="savedCreatureSelector" class="block text-sm font-medium text-gray-700">Select a saved creature:</label>
-        <select id="savedCreatureSelector" aria-label="Select a saved creature to autofill data" class="block w-full mt-1 mb-3 p-2 border border-gray-300 rounded" onchange="loadSavedCreature()">
+        <select id="savedCreatureSelector" class="block w-full mt-1 mb-3 p-2 border border-gray-300 rounded" onchange="loadSavedCreature()">
             <option value="">Select a creature to autofill</option>
         </select>
 
+        <!-- Creature Name Input -->
         <label for="creatureName" class="block text-sm font-medium text-gray-700">Creature Name:</label>
         <input type="text" id="creatureName" class="block w-full mt-1 mb-3 p-2 border border-gray-300 rounded" placeholder="Enter creature's name" required>
 
-        <!-- Your Damage with Percentage Box -->
+        <!-- Damage Input and Percentage -->
         <label for="yourDamage" class="block text-sm font-medium text-gray-700">Your Damage:</label>
         <div class="inline-input">
             <input type="number" id="yourDamage" min="1" class="block w-full mt-1 mb-3 p-2 border border-gray-300 rounded" placeholder="Enter your base damage" required oninput="calculateDamage(); storeInitialValues()">
             <input type="number" id="damagePercentage" min="0" placeholder="%" class="inline-percentage" title="Enter percentage to increase damage" oninput="applyDamagePercentage()">
         </div>
 
-        <!-- Your Weight with Percentage Box -->
+        <!-- Weight Input and Percentage -->
         <label for="userWeight" class="block text-sm font-medium text-gray-700">Your Weight:</label>
         <div class="inline-input">
             <input type="number" id="userWeight" min="1" class="block w-full mt-1 mb-3 p-2 border border-gray-300 rounded" placeholder="Enter your weight" required oninput="calculateDamage(); storeInitialValues()">
             <input type="number" id="weightPercentage" min="0" placeholder="%" class="inline-percentage" title="Enter percentage to increase weight" oninput="applyWeightPercentage()">
         </div>
+
+        <!-- Action Buttons -->
         <div class="buttons flex justify-between mt-4">
             <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded" onclick="calculateDamage()">Calculate</button>
             <button class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded" onclick="saveCreature()">Save</button>
@@ -93,16 +95,16 @@
         </div>
     </div>
 
-    <!-- Bottom Box (Target details) -->
+    <!-- Bottom Section for Target Creatures -->
     <div class="container mx-auto max-w-md mt-5 p-6 bg-white rounded-lg shadow-md">
         <!-- Dropdown to select saved creatures as target -->
         <label for="targetCreature" class="block text-sm font-medium text-gray-700">Choose Target Creature:</label>
-        <select id="targetCreature" aria-label="Select a saved creature as target" class="block w-full mt-1 mb-3 p-2 border border-gray-300 rounded" onchange="loadTargetCreature()">
+        <select id="targetCreature" class="block w-full mt-1 mb-3 p-2 border border-gray-300 rounded" onchange="loadTargetCreature()">
             <option value="">Select a saved creature as target</option>
         </select>
 
         <label for="sitOrLayMultiplier" class="block text-sm font-medium text-gray-700">Target Sit or Lay Multiplier:</label>
-        <select id="sitOrLayMultiplier" aria-label="Select the target's stance multiplier" class="block w-full mt-1 mb-3 p-2 border border-gray-300 rounded" onchange="calculateDamage()">
+        <select id="sitOrLayMultiplier" class="block w-full mt-1 mb-3 p-2 border border-gray-300 rounded" onchange="calculateDamage()">
             <option value="1.25">Laying (1.25)</option>
             <option value="1.12">Sitting (1.12)</option>
             <option value="1.0">Standing (1.0)</option>
@@ -126,179 +128,212 @@
     </div>
 
     <script>
-        // Store the initial values
-        let initialDamage, initialWeight;
-
-        // Initial creatures array
-        const initialCreatures = [
-    {"Creature Name": "Adharcaiin", "Base Damage": 250, "Weight": 1250},
-    {"Creature Name": "Aereis", "Base Damage": 260, "Weight": 2300},
-    {"Creature Name": "Aesho", "Base Damage": 180, "Weight": 2800},
-    {"Creature Name": "Aesmir", "Base Damage": 215, "Weight": 6500},
-    {"Creature Name": "Aholai", "Base Damage": 135, "Weight": 2300},
-    {"Creature Name": "Ahri'Tahmuk", "Base Damage": 325, "Weight": 4350},
-    {"Creature Name": "Aidoneiscus", "Base Damage": 400, "Weight": 3400},
-    {"Creature Name": "Aleicuda", "Base Damage": 400, "Weight": 5000},
-    {"Creature Name": "Alkaksu", "Base Damage": 65, "Weight": 800},
-    {"Creature Name": "Altulis", "Base Damage": 155, "Weight": 5000},
-    {"Creature Name": "Amolis", "Base Damage": 210, "Weight": 2700},
-    {"Creature Name": "Angelic Warden", "Base Damage": 65, "Weight": 2250},
-    {"Creature Name": "Ani", "Base Damage": 50, "Weight": 850},
-    {"Creature Name": "Anutill", "Base Damage": 200, "Weight": 3000},
-    {"Creature Name": "Aolenus", "Base Damage": 380, "Weight": 3350},
-    {"Creature Name": "Apofuex", "Base Damage": 75, "Weight": 3000},
-    {"Creature Name": "Aqoxturumox", "Base Damage": 150, "Weight": 22000},
-    {"Creature Name": "Arachyu", "Base Damage": 650, "Weight": 11000},
-    {"Creature Name": "Archalium", "Base Damage": 260, "Weight": 2500},
-    {"Creature Name": "Archinax", "Base Damage": 500, "Weight": 2500},
-    {"Creature Name": "Ardor Warden", "Base Damage": 95, "Weight": 7100},
-    {"Creature Name": "Arkmetta", "Base Damage": 225, "Weight": 5250},
-    {"Creature Name": "Arrainoa", "Base Damage": 400, "Weight": 2800},
-    {"Creature Name": "Arsonos", "Base Damage": 400, "Weight": 5000},
-    {"Creature Name": "Artikauk", "Base Damage": 180, "Weight": 2100},
-    {"Creature Name": "Asilvestrela", "Base Damage": 230, "Weight": 4500},
-    {"Creature Name": "Astrothi", "Base Damage": 85, "Weight": 800},
-    {"Creature Name": "Athulyth", "Base Damage": 175, "Weight": 8500},
-    {"Creature Name": "Aueko", "Base Damage": 100, "Weight": 2000},
-    {"Creature Name": "Auraron", "Base Damage": 350, "Weight": 8000},
-    {"Creature Name": "Avothius", "Base Damage": 320, "Weight": 7500},
-    {"Creature Name": "Axothan", "Base Damage": 375, "Weight": 8750},
-    {"Creature Name": "Banishii", "Base Damage": 200, "Weight": 3850},
-    {"Creature Name": "Bazelii", "Base Damage": 275, "Weight": 3750},
-    {"Creature Name": "Beezu", "Base Damage": 95, "Weight": 1100},
-    {"Creature Name": "Belluvaraptor", "Base Damage": 110, "Weight": 800},
-    {"Creature Name": "Bengon", "Base Damage": 225, "Weight": 3100},
-    {"Creature Name": "Bolatra", "Base Damage": 185, "Weight": 3000},
-    {"Creature Name": "Boreal Warden", "Base Damage": 65, "Weight": 50000},
-    {"Creature Name": "Borenhir", "Base Damage": 220, "Weight": 3800},
-    {"Creature Name": "Boskurro", "Base Damage": 365, "Weight": 5750},
-    {"Creature Name": "Brequewk", "Base Damage": 65 , "Weight": 850},
-    {"Creature Name": "Buff Eulopii", "Base Damage": 525, "Weight": 5200},
-    {"Creature Name": "Buukon", "Base Damage": 250, "Weight": 3400},
-    {"Creature Name": "Bäruw", "Base Damage": 575, "Weight": 6000},
-    {"Creature Name": "Caldonterrus", "Base Damage": 300, "Weight": 50000},
-    {"Creature Name": "Cantapodi", "Base Damage": 120, "Weight": 999},
-    {"Creature Name": "Cavengauu", "Base Damage": 275, "Weight": 5500},
-    {"Creature Name": "Celeritas", "Base Damage": 220, "Weight": 7200},
-    {"Creature Name": "Cenicara", "Base Damage": 200, "Weight": 2350},
-    {"Creature Name": "Chamei", "Base Damage": 220, "Weight": 9000},
-    {"Creature Name": "Chisudo", "Base Damage": 220, "Weight": 2050},
-    {"Creature Name": "Chrysos", "Base Damage": 285, "Weight": 2600},
-    {"Creature Name": "Cimidstik", "Base Damage": 120, "Weight": 1200},
-    {"Creature Name": "Cimmabu", "Base Damage": 50, "Weight": 1650},
-    {"Creature Name": "Citrulantis", "Base Damage": 100, "Weight": 3000},
-    {"Creature Name": "Clovilowper", "Base Damage": 150, "Weight": 3500},
-    {"Creature Name": "Colval", "Base Damage": 150, "Weight": 1150},
-    {"Creature Name": "Coniferon", "Base Damage": 150, "Weight": 4250},
-    {"Creature Name": "Corsarlett", "Base Damage": 230, "Weight": 1900},
-    {"Creature Name": "Corvurax", "Base Damage": 150, "Weight": 3100},
-    {"Creature Name": "Cottol", "Base Damage": 95, "Weight": 1350},
-    {"Creature Name": "Crata Peretina", "Base Damage": 200, "Weight": 7250},
-    {"Creature Name": "Cryptoth", "Base Damage": 300, "Weight": 5500},
-    {"Creature Name": "Cucuerpum", "Base Damage": 225, "Weight": 6000},
-    {"Creature Name": "Cupuere", "Base Damage": 50, "Weight": 3000},
-    {"Creature Name": "Cuxena", "Base Damage": 150, "Weight": 3250},
-    {"Creature Name": "Dabaemura", "Base Damage": 275, "Weight": 2200},
-    {"Creature Name": "Dalghara", "Base Damage": 150, "Weight": 4000},
-    {"Creature Name": "Dantenos", "Base Damage": 265, "Weight": 6000},
-    {"Creature Name": "Demetyra", "Base Damage": 125, "Weight": 3200},
-    {"Creature Name": "Denjzi", "Base Damage": 325, "Weight": 5000},
-    {"Creature Name": "Dieamarjla", "Base Damage": 105, "Weight": 1600},
-    {"Creature Name": "Diesura", "Base Damage": 110, "Weight": 1300},
-    {"Creature Name": "Diokrine", "Base Damage": 145, "Weight": 1500},
-    {"Creature Name": "Doragonix", "Base Damage": 125, "Weight": 1400},
-    {"Creature Name": "Dowatt", "Base Damage": 120, "Weight": 1550},
-    {"Creature Name": "Dragonixsauria", "Base Damage": 100, "Weight": 3500},
-    {"Creature Name": "Dunklaestus", "Base Damage": 450, "Weight": 3500},
-    {"Creature Name": "Dyaelatura", "Base Damage": 250, "Weight": 2200},
-    {"Creature Name": "Eigion Warden", "Base Damage": 70, "Weight": 30000},
-    {"Creature Name": "Eiroca", "Base Damage": 300, "Weight": 5000},
-    {"Creature Name": "Elarickkeir", "Base Damage": 400, "Weight": 6500},
-    {"Creature Name": "Emphines", "Base Damage": 125, "Weight": 1500},
-    {"Creature Name": "Empiterium", "Base Damage": 450, "Weight": 15750},
-    {"Creature Name": "Equenix", "Base Damage": 250, "Weight": 5350},
-    {"Creature Name": "Erridea", "Base Damage": 520, "Weight": 3200},
-    {"Creature Name": "Eskarlor", "Base Damage": 275, "Weight": 3000},
-            // You can add as many creatures as you'd like here
-        ];
-
-        // Onload function to auto-save initial creatures and update the UI
-        window.onload = function() {
-            let savedCreatures = JSON.parse(localStorage.getItem('creatures')) || [];
-
-            // Merge initialCreatures into savedCreatures (without duplicates based on name)
-            initialCreatures.forEach(creature => {
-                const exists = savedCreatures.find(saved => saved.name === creature.name);
-                if (!exists) {
-                    savedCreatures.push(creature);
-                }
-            });
-
-            // Save the updated list to localStorage
-            localStorage.setItem('creatures', JSON.stringify(savedCreatures));
-
-            // Update the dropdowns with the merged creatures
-            updateCreatureDropdown();
-            updateTargetCreatureDropdown();
-            updateSavedCreatureSelector();
-        };
-
-        // Function to update dropdown for selecting creatures
-        function updateSavedCreatureSelector() {
-            const savedCreatureSelector = document.getElementById("savedCreatureSelector");
-            const savedCreatures = JSON.parse(localStorage.getItem('creatures')) || [];
-            savedCreatureSelector.innerHTML = '<option value="">Select a creature to autofill</option>';
-            savedCreatures.forEach(creature => {
-                const option = document.createElement('option');
-                option.value = creature.name;
-                option.textContent = creature.name;
-                savedCreatureSelector.appendChild(option);
-            });
-        }
-
-        // Function to update target creature dropdown
-        function updateTargetCreatureDropdown() {
-            const targetCreatureDropdown = document.getElementById("targetCreature");
-            const savedCreatures = JSON.parse(localStorage.getItem('creatures')) || [];
-            targetCreatureDropdown.innerHTML = '<option value="">Select a saved creature as target</option>';
-            savedCreatures.forEach(creature => {
-                const option = document.createElement('option');
-                option.value = creature.name;
-                option.textContent = creature.name;
-                targetCreatureDropdown.appendChild(option);
-            });
-        }
-
-        // Function to update saved creatures dropdown for deletion
-        function updateCreatureDropdown() {
-            const creatureDropdown = document.getElementById("creatureDropdown");
-            const savedCreatures = JSON.parse(localStorage.getItem('creatures')) || [];
-            creatureDropdown.innerHTML = '<option value="">Select a creature</option>';
-            savedCreatures.forEach(creature => {
-                const option = document.createElement('option');
-                option.value = creature.name;
-                option.textContent = creature.name;
-                creatureDropdown.appendChild(option);
-            });
-        }
-
-        // Function to load saved creature details into top box
-        function loadSavedCreature() {
-            const savedCreatureSelector = document.getElementById("savedCreatureSelector");
-            const creatureName = savedCreatureSelector.value;
-            const savedCreatures = JSON.parse(localStorage.getItem('creatures')) || [];
-            const selectedCreature = savedCreatures.find(creature => creature.name === creatureName);
-
-            if (selectedCreature) {
-                document.getElementById("creatureName").value = selectedCreature.name;
-                document.getElementById("yourDamage").value = selectedCreature.yourDamage;
-                document.getElementById("userWeight").value = selectedCreature.userWeight;
-                storeInitialValues(); // Store initial values for percentage adjustment
-                calculateDamage();
-            }
-        }
+        // JavaScript for handling all calculations, saving/loading creatures, and other interactions will go here.
     </script>
+    <script>
+    // Store initial values for percentage calculations
+    let initialDamage = 0;
+    let initialWeight = 0;
+
+    // Initial creatures array
+    const initialCreatures = [
+        { name: "Adharcaiin", yourDamage: 250, userWeight: 1250 },
+        { name: "Aereis", yourDamage: 260, userWeight: 2300 },
+        { name: "Aesho", yourDamage: 180, userWeight: 2800 },
+        { name: "Aesmir", yourDamage: 215, userWeight: 6500 },
+        { name: "Aholai", yourDamage: 135, userWeight: 2300 },
+        { name: "Ahri'Tahmuk", yourDamage: 325, userWeight: 4350 }
+    ];
+
+    window.onload = function() {
+        let savedCreatures = JSON.parse(localStorage.getItem('creatures')) || [];
+
+        // Merge initialCreatures into savedCreatures (without duplicates based on name)
+        initialCreatures.forEach(creature => {
+            const exists = savedCreatures.find(saved => saved.name === creature.name);
+            if (!exists) {
+                savedCreatures.push(creature);
+            }
+        });
+
+        localStorage.setItem('creatures', JSON.stringify(savedCreatures));
+
+        // Update dropdowns with the merged creatures
+        updateCreatureDropdown();
+        updateTargetCreatureDropdown();
+        updateSavedCreatureSelector();
+    };
+
+    // Store initial values for percentage calculations
+    function storeInitialValues() {
+        initialDamage = parseFloat(document.getElementById("yourDamage").value) || 0;
+        initialWeight = parseFloat(document.getElementById("userWeight").value) || 0;
+    }
+
+    // Function to apply the damage percentage live
+    function applyDamagePercentage() {
+        const percentage = parseFloat(document.getElementById("damagePercentage").value);
+        if (!percentage) {
+            document.getElementById("yourDamage").value = initialDamage.toFixed(2);
+        } else {
+            const updatedDamage = initialDamage + (initialDamage * (percentage / 100));
+            document.getElementById("yourDamage").value = updatedDamage.toFixed(2);
+        }
+        calculateDamage();
+    }
+
+    // Function to apply the weight percentage live
+    function applyWeightPercentage() {
+        const percentage = parseFloat(document.getElementById("weightPercentage").value);
+        if (!percentage) {
+            document.getElementById("userWeight").value = initialWeight.toFixed(2);
+        } else {
+            const updatedWeight = initialWeight + (initialWeight * (percentage / 100));
+            document.getElementById("userWeight").value = updatedWeight.toFixed(2);
+        }
+        calculateDamage();
+    }
+
+    // Function to calculate the final damage
+    function calculateDamage() {
+        const yourDamage = parseFloat(document.getElementById("yourDamage").value) || 0;
+        const sitOrLayMultiplier = parseFloat(document.getElementById("sitOrLayMultiplier").value) || 1;
+        const packMultiplier = parseFloat(document.getElementById("packMultiplier").value) || 1;
+        const userWeight = parseFloat(document.getElementById("userWeight").value) || 0;
+        const targetWeight = parseFloat(document.getElementById("targetWeight").value) || 1;
+
+        const finalDamage = (yourDamage * sitOrLayMultiplier * packMultiplier * (1 + (userWeight / targetWeight))) / 2;
+        document.getElementById("finalDamage").innerText = finalDamage.toFixed(2);
+    }
+
+    // Save creatures
+    function saveCreature() {
+        let savedCreatures = JSON.parse(localStorage.getItem('creatures')) || [];
+        const creatureName = document.getElementById("creatureName").value;
+        const yourDamage = parseFloat(document.getElementById("yourDamage").value) || 0;
+        const userWeight = parseFloat(document.getElementById("userWeight").value) || 0;
+
+        const newCreature = { name: creatureName, yourDamage: yourDamage, userWeight: userWeight };
+
+        const exists = savedCreatures.find(creature => creature.name === newCreature.name);
+        if (!exists) {
+            savedCreatures.push(newCreature);
+        }
+
+        localStorage.setItem('creatures', JSON.stringify(savedCreatures));
+        updateCreatureDropdown();
+    }
+
+    // Load creatures from dropdown
+    function loadSavedCreature() {
+        const savedCreatureSelector = document.getElementById("savedCreatureSelector");
+        const creatureName = savedCreatureSelector.value;
+        const savedCreatures = JSON.parse(localStorage.getItem('creatures')) || [];
+        const selectedCreature = savedCreatures.find(creature => creature.name === creatureName);
+
+        if (selectedCreature) {
+            document.getElementById("creatureName").value = selectedCreature.name;
+            document.getElementById("yourDamage").value = selectedCreature.yourDamage;
+            document.getElementById("userWeight").value = selectedCreature.userWeight;
+            storeInitialValues();
+            calculateDamage();
+        }
+    }
+
+    // Reset the top box (creature details)
+    function resetTopBox() {
+        document.getElementById("creatureName").value = '';
+        document.getElementById("yourDamage").value = '';
+        document.getElementById("userWeight").value = '';
+        document.getElementById("damagePercentage").value = '';
+        document.getElementById("weightPercentage").value = '';
+        initialDamage = 0;
+        initialWeight = 0;
+        document.getElementById("finalDamage").innerText = '0';
+    }
+
+    // Reset the bottom box (target details)
+    function resetBottomBox() {
+        document.getElementById("targetCreature").value = '';
+        document.getElementById("targetWeight").value = '';
+        document.getElementById("sitOrLayMultiplier").value = '1.0';
+        document.getElementById("packMultiplier").value = '1';
+        calculateDamage();
+    }
+
+    // Function to update the creature dropdowns
+    function updateSavedCreatureSelector() {
+        const savedCreatureSelector = document.getElementById("savedCreatureSelector");
+        const savedCreatures = JSON.parse(localStorage.getItem('creatures')) || [];
+        savedCreatureSelector.innerHTML = '<option value="">Select a creature to autofill</option>';
+        savedCreatures.forEach(creature => {
+            const option = document.createElement('option');
+            option.value = creature.name;
+            option.textContent = creature.name;
+            savedCreatureSelector.appendChild(option);
+        });
+    }
+
+    function updateTargetCreatureDropdown() {
+        const targetCreatureDropdown = document.getElementById("targetCreature");
+        const savedCreatures = JSON.parse(localStorage.getItem('creatures')) || [];
+        targetCreatureDropdown.innerHTML = '<option value="">Select a saved creature as target</option>';
+        savedCreatures.forEach(creature => {
+            const option = document.createElement('option');
+            option.value = creature.name;
+            option.textContent = creature.name;
+            targetCreatureDropdown.appendChild(option);
+        });
+    }
+
+    function updateCreatureDropdown() {
+        const creatureDropdown = document.getElementById("creatureDropdown");
+        const savedCreatures = JSON.parse(localStorage.getItem('creatures')) || [];
+        creatureDropdown.innerHTML = '<option value="">Select a creature</option>';
+        savedCreatures.forEach(creature => {
+            const option = document.createElement('option');
+            option.value = creature.name;
+            option.textContent = creature.name;
+            creatureDropdown.appendChild(option);
+        });
+    }
+
+    // Load the selected target creature's weight into the target weight field
+    function loadTargetCreature() {
+        const targetCreatureDropdown = document.getElementById("targetCreature");
+        const creatureName = targetCreatureDropdown.value;
+        const savedCreatures = JSON.parse(localStorage.getItem('creatures')) || [];
+        const selectedCreature = savedCreatures.find(creature => creature.name === creatureName);
+
+        if (selectedCreature) {
+            document.getElementById("targetWeight").value = selectedCreature.userWeight;
+            calculateDamage();
+        }
+    }
+
+    // Confirm deletion of a selected creature from localStorage
+    function confirmDeletion() {
+        const creatureDropdown = document.getElementById("creatureDropdown");
+        const creatureName = creatureDropdown.value;
+
+        if (creatureName) {
+            const confirmation = confirm(`Are you sure you want to delete ${creatureName}?`);
+            if (confirmation) {
+                let savedCreatures = JSON.parse(localStorage.getItem('creatures')) || [];
+                savedCreatures = savedCreatures.filter(creature => creature.name !== creatureName);
+                localStorage.setItem('creatures', JSON.stringify(savedCreatures));
+
+                // Update dropdowns after deletion
+                updateCreatureDropdown();
+                updateSavedCreatureSelector();
+                updateTargetCreatureDropdown();
+                alert(`${creatureName} has been deleted.`);
+            }
+        } else {
+            alert('Please select a creature to delete.');
+        }
+    }
+</script>
 
 </body>
-
 </html>
